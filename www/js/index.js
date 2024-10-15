@@ -8,13 +8,20 @@ let addDialog = $('#dialog-add').dialog({
     height: 200,
     title: 'Add item',
     modal: true,
+    open: function() {
+        $('#item').val('');
+        $('#item').focus();
+        $(this).addClass('ui-dialog-content-focus');
+    },
     buttons: {
         'Add Item': function() {
             let item = $('#item').val();
             if (item) {
                 addItem(item);
+                items.push(item);
                 $('#item').val('');
                 $(this).dialog('close');
+                saveTaskList();
             }
         },
         'Cancel': function() {
@@ -84,9 +91,36 @@ function addItem(item) {
 }
 
 function editItem(newItem) {
+    let index = items.indexOf(currentTask.find('p').text());
     currentTask.find('p').text(newItem);
+    items[index] = newItem;
+    saveTaskList();
 }
 
 function deleteItem() {
+    let index = items.indexOf(currentTask.find('p').text());
     currentTask.remove();
+    items.splice(index, 1);
+    saveTaskList();
 }
+
+function saveTaskList() {
+    const jsonString = JSON.stringify(items); // Convert array to JSON string
+    localStorage.setItem('taskList', jsonString); // Save JSON string to localStorage
+}
+
+// Function to load the array from localStorage
+function loadTaskList() {
+    const jsonString = localStorage.getItem('taskList'); // Get JSON string from localStorage
+    return jsonString ? JSON.parse(jsonString) : []; // Convert back to array or return empty array
+}
+
+function loadTaskListUI() {
+    items = loadTaskList();
+    console.log(items);
+    for (let item of items) {
+        addItem(item);
+    }
+}
+
+loadTaskListUI();
